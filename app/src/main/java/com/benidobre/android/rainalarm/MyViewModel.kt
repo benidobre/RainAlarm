@@ -1,19 +1,43 @@
 package com.benidobre.android.rainalarm
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.*
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class MyViewModel : ViewModel() {
+class MyViewModel(application: Application) : AndroidViewModel(application) {
     private val _forecast = MutableLiveData<Forecast>()
     val forecast: LiveData<Forecast> = _forecast
 
     fun load() {
         viewModelScope.launch {
-            val forecast = Service.api.getForecast("37.8267","-122.4233")
-            _forecast.postValue(forecast)
+            if (ContextCompat.checkSelfPermission(getApplication(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                val location = getLastLocation(getApplication())
+                val forecast = Service.api.getForecast(location?.latitude.toString(), location?.longitude.toString())
+                _forecast.postValue(forecast)
+            } else {
+                //TODO
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun getLastLocation(context: Context) : Location? {
+        return suspendCoroutine { continuation ->
+            val task = LocationServices.getFusedLocationProviderClient(context).lastLocation
+            task.addOnCompleteListener {
+                continuation.resume(task.result)
+            }
         }
     }
 }
