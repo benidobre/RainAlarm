@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
+import com.benidobre.android.rainalarm.BuisinessLogic.getLastLocation
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
@@ -27,16 +28,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
                 _forecast.postValue(forecast)
             } else {
                 //TODO
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    suspend fun getLastLocation(context: Context) : Location? {
-        return suspendCoroutine { continuation ->
-            val task = LocationServices.getFusedLocationProviderClient(context).lastLocation
-            task.addOnCompleteListener {
-                continuation.resume(task.result)
             }
         }
     }

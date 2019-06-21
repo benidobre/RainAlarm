@@ -1,15 +1,22 @@
 package com.benidobre.android.rainalarm
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.appcompat.app.AlertDialog
+import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +28,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         askForLocationPermission()
+
+        button.setOnClickListener {
+            Log.d("BENINOS", "onClickListener")
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY,10)
+            calendar.set(Calendar.MINUTE,50)
+            calendar.set(Calendar.SECOND,30)
+            val intent = Intent(applicationContext, NotificationReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(applicationContext, 456, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, AlarmManager.INTERVAL_DAY, pendingIntent)
+        }
 
         viewModel.load()
         viewModel.forecast.observe(this, Observer {
